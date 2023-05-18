@@ -10,9 +10,66 @@
         <a href="https://support.qq.com/products/405384" target="_blank" class="text-sm lg:text-base flex items-center">
             问题反馈
         </a> -->
-        <a href="/editor" class="hidden lg:block">编辑</a>
+        <a href="/editor" class="hidden lg:block" v-if="user.email">编辑</a>
+        <div class="flex items-center justify-end" v-if="user.email">
+            <el-dropdown>
+                <div class="flex items-center">
+                    <!-- <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/> -->
+                    <div class="ml-2">{{filterName(user.email)}}</div>
+                    <el-icon class="el-icon--right">
+                        <arrow-down />
+                    </el-icon>
+                </div>
+                <template #dropdown class="w-full">
+                    <el-dropdown-menu  class="text-center">
+                        <el-dropdown-item style="width: 140px;" class="justify-center" @click="logout">退出</el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
+        </div>
         <a href="/sign-in" class="hidden lg:block" >登录</a>
         <a href="/sign-up" class="hidden lg:block" >注册</a>
     </div>
   </div>
 </template>
+<script setup lang="ts">
+import {
+    ElDropdown,
+    ElDropdownMenu,
+    ElDropdownItem,
+    ElIcon,
+    ElAvatar
+} from "element-plus";
+import { ArrowDown } from '@element-plus/icons-vue'
+import { getCookie, clearLocal } from "~/assets/js/utils/tools"
+
+const user = ref({"email": ""})
+const initLocalUser = async () => {
+    const res = getCookie("__user")
+    console.log("res:", res)
+
+    if (res) {
+        const userObject = JSON.parse(decodeURIComponent(res))
+        if (userObject) {
+            user.value = userObject
+        }
+        // console.log($userObject)
+        // $store.commit("user", user)
+        useState("user", () => {
+            return userObject
+        })
+    }
+}
+if (process.client) {
+    initLocalUser()
+}
+
+const filterName = (email) => {
+    return email.length > 8 ? email.substring(0, 8) + "..." : email
+
+}
+const logout = () => {
+    clearLocal()
+    window.location.href = "/";
+}
+</script>
